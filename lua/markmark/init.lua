@@ -32,7 +32,7 @@ local function setup(opts)
 
 	-- Setup commands and keybindings only for markdown files
 	vim.api.nvim_create_autocmd("FileType", {
-		pattern = "markdown",
+		pattern = { "markdown", "Avante" },
 		callback = function()
 			set_markdown_commands()
 			keybindings.set_markdown_keybindings()

@@ -1,92 +1,74 @@
 local M = {}
 
--- Function to flatten the symbol tree
-local function flatten_symbols(symbols, kind)
-  local flat_symbols = {}
-  local function traverse(symbols)
-    for _, symbol in ipairs(symbols) do
-      if symbol.kind == kind then
-        table.insert(flat_symbols, symbol)
-      end
-      if symbol.children then
-        traverse(symbol.children)
-      end
-    end
-  end
-  traverse(symbols)
-  return flat_symbols
+-- Function to get all headers in the document
+local function get_all_headers()
+	local headers = {}
+	local content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
+	for i, line in ipairs(vim.split(content, "\n")) do
+		-- Trim leading spaces before checking for the header marker
+		local trimmed_line = line:match("^%s*(.-)$")
+		if trimmed_line:match("^#+") then
+			table.insert(headers, i)
+		end
+	end
+	return headers
 end
 
--- Helper function to find the next position of a specific kind
-local function find_next_position_of_kind(current_line, symbols, kind)
-  local flat_symbols = flatten_symbols(symbols, kind)
-  for _, symbol in ipairs(flat_symbols) do
-    if symbol.range.start.line > current_line and symbol.kind == kind then
-      return symbol.range.start.line, symbol.range.start.character
-    end
-  end
-  return nil
+-- Helper function to find the next header position
+local function find_next_position_of_header(current_line, headers)
+	for _, header_line in ipairs(headers) do
+		if header_line > current_line then
+			return header_line
+		end
+	end
+	return nil
 end
 
--- Helper function to find the previous position of a specific kind
-local function find_previous_position_of_kind(current_line, symbols, kind)
-  local flat_symbols = flatten_symbols(symbols, kind)
-  for i = #flat_symbols, 1, -1 do
-    local symbol = flat_symbols[i]
-    if symbol.range.start.line < current_line and symbol.kind == kind then
-      return symbol.range.start.line, symbol.range.start.character
-    end
-  end
-  return nil
+-- Helper function to find the previous header position
+local function find_previous_position_of_header(current_line, headers)
+	for i = #headers, 1, -1 do
+		local header_line = headers[i]
+		if header_line < current_line then
+			return header_line
+		end
+	end
+	return nil
 end
 
 function M.jump_to_next_header()
-  local params = vim.lsp.util.make_position_params()
-  vim.lsp.buf_request(0, "textDocument/documentSymbol", params, function(err, result, ctx, _)
-    if err then
-      print("Error fetching symbols: ", err)
-      return
-    end
+	local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
+	local headers = get_all_headers()
+	local next_line = find_next_position_of_header(current_line, headers)
 
-    local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
-    local next_line, next_char = find_next_position_of_kind(current_line, result, 15) -- 15 is the kind for headers
-
-    if next_line then
-      vim.api.nvim_win_set_cursor(0, { next_line + 1, next_char })
-    else
-      -- If no next header is found, wrap around to the beginning
-      next_line, next_char = find_next_position_of_kind(-1, result, 15)
-      if next_line then
-        vim.api.nvim_win_set_cursor(0, { next_line + 1, next_char })
-      else
-        print("No headers found in the document.")
-      end
-    end
-  end)
+	if next_line then
+		vim.api.nvim_win_set_cursor(0, { next_line + 1, 0 })
+	else
+		-- Wrap around to the beginning if no next header is found
+		next_line = find_next_position_of_header(-1, headers)
+		if next_line then
+			vim.api.nvim_win_set_cursor(0, { next_line + 1, 0 })
+		else
+			print("No headers found in the document.")
+		end
+	end
 end
 
 function M.jump_to_previous_header()
-  local params = vim.lsp.util.make_position_params()
-  vim.lsp.buf_request(0, "textDocument/documentSymbol", params, function(err, result, ctx, _)
-    if err then
-      print("Error fetching symbols: ", err)
-      return
-    end
-    local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
-    local prev_line, prev_char = find_previous_position_of_kind(current_line, result, 15) -- 15 is the kind for headers
+	local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
+	local headers = get_all_headers()
+	local prev_line = find_previous_position_of_header(current_line, headers)
 
-    if prev_line then
-      vim.api.nvim_win_set_cursor(0, { prev_line + 1, prev_char })
-    else
-      -- If no previous header is found, wrap around to the end
-      prev_line, prev_char = find_previous_position_of_kind(math.huge, result, 15)
-      if prev_line then
-        vim.api.nvim_win_set_cursor(0, { prev_line + 1, prev_char })
-      else
-        print("No headers found in the document.")
-      end
-    end
-  end)
+	if prev_line then
+		vim.api.nvim_win_set_cursor(0, { prev_line + 1, 0 })
+	else
+		-- Wrap around to the end if no previous header is found
+		prev_line = find_previous_position_of_header(math.huge, headers)
+		if prev_line then
+			vim.api.nvim_win_set_cursor(0, { prev_line + 1, 0 })
+		else
+			print("No headers found in the document.")
+		end
+	end
 end
 
 return M

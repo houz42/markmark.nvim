@@ -2,6 +2,7 @@
 
 Hey everyone! MarkMark.nvim is my first Neovim plugin, brought to life with the help of [avante.nvim](https://github.com/yetone/avante.nvim).
 This plugin is designed specifically for navigating Markdown files, offering commands to quickly jump to headers, code blocks, and tables, making it a breeze to move through large documents.
+And guess what, it even works in avante.nvim's output stream!
 
 ## Features
 
