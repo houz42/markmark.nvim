@@ -31,11 +31,6 @@ function M.jump_to_next_code_block()
 	local code_blocks = get_all_code_blocks()
 	local next_line = Utils.find_next_position(current_line, code_blocks)
 
-	-- Print each header
-	for _, header in ipairs(code_blocks) do
-		print("Code block start: " .. header.start .. ", end: " .. header["end"])
-	end
-
 	if next_line then
 		vim.api.nvim_win_set_cursor(0, { next_line + 1, 0 })
 	else
@@ -44,7 +39,7 @@ function M.jump_to_next_code_block()
 end
 
 function M.jump_to_previous_code_block()
-	local current_line = vim.api.nvim_win_get_cursor(0)[1]
+	local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
 	local code_blocks = get_all_code_blocks()
 	local prev_line = Utils.find_previous_position(current_line, code_blocks)
 

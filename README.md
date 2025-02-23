@@ -14,20 +14,21 @@ And guess what? It works in avante.nvim's output stream!
 
 ### Using [Lazy.nvim](https://github.com/folke/lazy.nvim)
 
-To install MarkMark.nvim using Lazy, add the following to your `plugins/markmark.nvim.lua`:
-
 ```lua
-return {
-  'houz42/markmark.nvim',
-  ft = 'markdown',  -- Load the plugin only for markdown files
-  config = function()
-    require('markmark').setup({
-      keybindings = {
-        -- Your customized keybindings here
-        -- I know you're running out of keys on your keyboard
-      }
-    })
-  end
+{
+  { "houz42/markmark.nvim" },
+  ---- adding additional file types here, e.g., Avante for Avante.nvim output stream.
+  ft = { "markdown", "Avante" },
+  opts = {},
+  ---- Override default keybindings
+  -- keys = {
+  --   { "]#", ":MarkMarkNextHeader<CR>", desc = "Next Header" },
+  --   { "[#", ":MarkMarkPrevHeader<CR>", desc = "Previous Header" },
+  --   { "]`", ":MarkMarkNextCode<CR>", desc = "Next Code Block" },
+  --   { "[`", ":MarkMarkPrevCode<CR>", desc = "Previous Code Block" },
+  --   { "]|", ":MarkMarkNextTable<CR>", desc = "Next Table" },
+  --   { "[|", ":MarkMarkPrevTable<CR>", desc = "Previous Table" },
+  -- },
 }
 ```
 
@@ -38,10 +39,19 @@ Add the following to your `init.lua` or `init.vim`:
 ```lua
 use {
   'houz42/markmark.nvim',
+  ft = { 'markdown', 'avante' },
   config = function()
-    require('markmark').setup()
-  end,
-  ft = 'markdown'  -- Load the plugin only for markdown files
+    require('markmark').setup({
+      -- Add any configuration options here
+    })
+    -- -- Manually override keybindings
+    -- vim.api.nvim_set_keymap('n', ']#', ':MarkMarkNextHeader<CR>', { noremap = true, silent = true })
+    -- vim.api.nvim_set_keymap('n', '[#', ':MarkMarkPrevHeader<CR>', { noremap = true, silent = true })
+    -- vim.api.nvim_set_keymap('n', ']`', ':MarkMarkNextCode<CR>', { noremap = true, silent = true })
+    -- vim.api.nvim_set_keymap('n', '[`', ':MarkMarkPrevCode<CR>', { noremap = true, silent = true })
+    -- vim.api.nvim_set_keymap('n', ']|', ':MarkMarkNextTable<CR>', { noremap = true, silent = true })
+    -- vim.api.nvim_set_keymap('n', '[|', ':MarkMarkPrevTable<CR>', { noremap = true, silent = true })
+  end
 }
 ```
 
@@ -50,10 +60,24 @@ use {
 Add the following to your `init.vim`:
 
 ```vim
-augroup markmark
+call plug#begin('~/.vim/plugged')
+Plug 'houz42/markmark.nvim'
+call plug#end()
+
+augroup markmark_config
   autocmd!
-  autocmd FileType markdown Plug 'houz42/markmark.nvim'
-augroup ENDim
+  autocmd FileType markdown,avante lua require('markmark').setup({
+    -- Add any configuration options here
+  })
+augroup END
+
+" " Manually override keybindings
+"nnoremap ]# :MarkMarkNextHeader<CR>
+"nnoremap [# :MarkMarkPrevHeader<CR>
+"nnoremap ]` :MarkMarkNextCode<CR>
+"nnoremap [` :MarkMarkPrevCode<CR>
+"nnoremap ]| :MarkMarkNextTable<CR>
+"nnoremap [| :MarkMarkPrevTable<CR>
 ```
 
 Then run `:PlugInstall` to install the plugin.
@@ -71,9 +95,7 @@ Once installed, you can use the following commands to navigate your Markdown fil
 | `:MarkMarkNextTable`  | Jump to the next table          |
 | `:MarkMarkPrevTable`  | Jump to the previous table      |
 
-## Keybindings
-
-### Default Keybindings
+## Default Keybindings
 
 MarkMark.nvim comes with the following default keybindings for navigating Markdown files:
 
@@ -83,23 +105,6 @@ MarkMark.nvim comes with the following default keybindings for navigating Markdo
 - ``[` ``: Jump to the previous code block
 - `]|`: Jump to the next table
 - `[|`: Jump to the previous table
-
-### Customizing Keybindings
-
-You can customize the keybindings by passing a configuration table to the `setup` function. Here is an example of how to customize the keybindings:
-
-```lua
-require('markmark').setup({
-  keybindings = {
-    next_header = "]H",
-    prev_header = "[H",
-    next_code = "]C",
-    prev_code = "[C",
-    next_table = "]T",
-    prev_table = "[T",
-  }
-})
-```
 
 ## Contributing
 

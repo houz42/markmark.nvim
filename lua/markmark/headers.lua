@@ -18,14 +18,7 @@ function M.jump_to_next_header()
 	local current_line = vim.api.nvim_win_get_cursor(0)[1]
 	local headers = get_all_headers()
 
-	-- Print each header
-	for _, header in ipairs(headers) do
-		print("Header start: " .. header.start .. ", end: " .. header["end"])
-	end
-
 	local next_line = Utils.find_next_position(current_line, headers)
-
-	print("Next header: " .. next_line)
 
 	if next_line then
 		vim.api.nvim_win_set_cursor(0, { next_line, 0 })
